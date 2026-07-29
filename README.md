@@ -2,8 +2,8 @@
 
 A Samsung One UI–inspired edge panel — swipe-in quick actions drawer with a second swappable insights page, built for fintech apps.
 
-<!-- HERO GIF/VIDEO — replace with GitHub-hosted asset link -->
-<img width="1280" height="720" alt="finpanel" src="PLACEHOLDER" />
+<img width="1280" height="720" alt="km_20260729-2_1080p_30f_20260729_060217-ezgif com-video-to-gif-converter (1)" src="https://github.com/user-attachments/assets/2db05954-b0d7-4810-a30c-5420036271fb" />
+
 
 ---
 
@@ -75,8 +75,15 @@ Override the default actions with your own:
 
 ## Preview
 
-<!-- PREVIEW VIDEO — replace with GitHub-hosted asset link -->
-PLACEHOLDER
+
+
+
+
+https://github.com/user-attachments/assets/825ac610-6419-4dbb-bb7b-935f3cae7414
+
+
+
+
 
 ---
 
