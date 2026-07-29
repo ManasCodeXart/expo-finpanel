@@ -1,56 +1,173 @@
-# Welcome to your Expo app 👋
+# expo-finpanel
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A Samsung One UI–inspired edge panel — swipe-in quick actions drawer with a second swappable insights page, built for fintech apps.
 
-## Get started
+<!-- HERO GIF/VIDEO — replace with GitHub-hosted asset link -->
+<img width="1280" height="720" alt="finpanel" src="PLACEHOLDER" />
 
-1. Install dependencies
+---
 
-   ```bash
-   npm install
-   ```
+## ✨ Features
 
-2. Start the app
+- 📱 **Edge pill trigger** — tap or swipe left on the right-edge pill to open, fades out the moment the drawer opens
+- 🎠 **Two-page swipeable drawer** — Quick Actions and Insights live side by side in one carousel, with an animated pill-dot pagination indicator that tracks the active page
+- 🪄 **Staggered entrance animations** — each action item springs and fades in with a per-index delay, driven by a small reusable `AnimatedStaggerItem` primitive
+- 👆 **Independent, non-conflicting gestures** — pill tap/swipe-to-open, drawer swipe-to-page, and overlay tap-to-dismiss are all handled as separate gesture recognizers so none of them fight each other
+- 🧩 **Swappable second page** — `InsightPanel` ships as a placeholder; swap it for spending stats, subscriptions, a savings streak, or anything else, and wrap your content in `AnimatedStaggerItem` to keep the same entrance motion
+- 🧠 **TypeScript-first** — typed `ActionItem` list, discriminated `DrawerPage` union (`'actions' | 'insights'`), fully typed props
+- ♿ **Accessible by default** — `accessibilityRole` / `accessibilityLabel` on every action item
 
-   ```bash
-   npx expo start
-   ```
+---
 
-In the output, you'll find options to open the app in a
+## ⚙️ Installation
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+This isn't published as an npm package yet — copy the source directly into your project.
 
 ```bash
-npm run reset-project
+git clone https://github.com/ManasCodeXart/expo-finpanel
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Copy `src/components/` and `src/constants/` from `src/`, plus `assets/images/` (`Cards.png`, `quickpay.png`, `savings.png`, `crypto.png`, `bills.png`), into your project, then install the peer dependencies:
 
-### Other setup steps
+```bash
+npx expo install react-native-reanimated react-native-worklets react-native-gesture-handler
+```
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+> Reanimated 4.x ships its worklets runtime as the separate `react-native-worklets` package — it's required alongside `react-native-reanimated`, not optional.
 
-## Learn more
+> Requires `react-native-reanimated`'s Babel plugin already configured, and `GestureHandlerRootView` wrapping your app root — both are standard for any Expo Router / RN project already using Reanimated or Gesture Handler.
 
-To learn more about developing your project with Expo, look at the following resources:
+---
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## 🚀 Usage
 
-## Join the community
+```tsx
+import { StyleSheet, View } from 'react-native';
+import QuickActionsDrawer from './components/QuickActionsDrawer';
 
-Join our community of developers creating universal apps.
+export default function Home() {
+  return (
+    <View style={styles.container}>
+      <QuickActionsDrawer
+        onActionPress={(id) => console.log('Pressed:', id)}
+        onOpenChange={(isOpen) => console.log('Drawer open:', isOpen)}
+      />
+    </View>
+  );
+}
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: '#0c0c0c' },
+});
+```
+
+Override the default actions with your own:
+
+```tsx
+<QuickActionsDrawer
+  actions={[
+    { id: 'transfer', label: 'Transfer', icon: require('./assets/transfer.png') },
+    { id: 'invest', label: 'Invest', icon: require('./assets/invest.png') },
+  ]}
+  onActionPress={(id) => navigateTo(id)}
+/>
+```
+
+## Preview
+
+<!-- PREVIEW VIDEO — replace with GitHub-hosted asset link -->
+PLACEHOLDER
+
+---
+
+## 👆 Gestures
+
+| Gesture | Result |
+|---|---|
+| Tap or swipe left on the edge pill | Opens the drawer |
+| Swipe left on the drawer | Advances from Quick Actions → Insights |
+| Swipe right on Insights | Goes back to Quick Actions |
+| Swipe right on Quick Actions | Closes the drawer |
+| Tap the overlay | Closes the drawer from any page |
+
+---
+
+## 🧱 Component Anatomy
+
+```
+<QuickActionsDrawer>
+  ├─ Pill              (edge trigger — tap or swipe-left to open)
+  ├─ Overlay           (backdrop, tap to close)
+  └─ Carousel
+       ├─ ActionPanel   (page 1 — quick actions grid)
+       └─ InsightPanel  (page 2 — placeholder, swap for your own content)
+```
+
+`ActionPanel`, `InsightPanel`, and `AnimatedStaggerItem` are also exported individually if you want to use them outside the drawer — see the API tables below.
+
+---
+
+## 🧩 API
+
+### `<QuickActionsDrawer>`
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `actions` | `readonly ActionItem[]` | 5 built-in fintech actions (Cards, Quick Pay, Savings, Crypto, Your Bills) | Actions rendered in the grid on page one. |
+| `onActionPress` | `(actionId: string) => void` | — | Called when an action is tapped. The drawer closes automatically before this fires. |
+| `onOpenChange` | `(isOpen: boolean) => void` | — | Called whenever the drawer opens or closes, whether by gesture or overlay tap. |
+
+### `<ActionPanel>`
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `actions` | `readonly ActionItem[]` | — | Actions to render in the grid. |
+| `visible` | `boolean` | — | Controls the stagger entrance animation. |
+| `onActionPress` | `(id: string) => void` | — | Fired on tap. |
+| `width` | `number` | — | Panel width — driven by the parent drawer's page width. |
+
+### `<InsightPanel>`
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `visible` | `boolean` | — | Controls the entrance animation. |
+| `width` | `number` | — | Panel width — driven by the parent drawer. |
+
+> Ships as a placeholder — swap it for your own content (spending stats, subscriptions, a savings streak, etc.), and wrap it in `AnimatedStaggerItem` to keep the same entrance motion as the rest of the drawer.
+
+### `<AnimatedStaggerItem>`
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `index` | `number` | — | Position in the stagger sequence. |
+| `visible` | `boolean` | — | Triggers entrance (`true`) or resets (`false`). |
+| `baseDelay` | `number` | `80` | ms before the first item starts entering. |
+| `staggerMs` | `number` | `60` | ms added per subsequent index. |
+| `translateDistance` | `number` | `40` | px the item translates in from. |
+| `springConfig` | `WithSpringConfig` | `{ damping: 18, stiffness: 220, mass: 0.6 }` | Spring driving the translate. |
+| `fadeConfig` | `WithTimingConfig` | `{ duration: 180 }` | Timing driving the opacity fade. |
+| `children` | `ReactNode` | — | Content to animate in. |
+
+### Types
+
+```ts
+interface ActionItem {
+  readonly id: string;
+  readonly label: string;
+  readonly icon: ImageSourcePropType;
+}
+
+type DrawerPage = 'actions' | 'insights';
+```
+
+---
+
+## 📄 License
+
+MIT — see [LICENSE](./LICENSE).
+
+---
+
+## 🧱 Stack
+
+[Expo SDK 57](https://expo.dev/changelog) · [React Native 0.86](https://reactnative.dev/) · [Reanimated 4.5](https://docs.swmansion.com/react-native-reanimated/) · [React Native Worklets 0.10](https://docs.swmansion.com/react-native-reanimated/) · [Gesture Handler 2.32](https://docs.swmansion.com/react-native-gesture-handler/)
